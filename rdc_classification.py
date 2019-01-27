@@ -619,7 +619,7 @@ def main():
         train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=args.train_batch_size)
 
         model.train()
-        datachart='{"chart": "live training loss", "axis": "number of steps"}'
+        datachart='{"chart": "live training loss", "axis": "number of iterations"}'
         #datachart_acc='{"chart": "live training accuracy", "axis": "number of steps"}'
         print(datachart)
         #print(datachart_acc)
@@ -654,7 +654,7 @@ def main():
                 if (step+1)%100==0:
                     print('Step[{}/{}],Loss: {:.4f}'.format(step+1,num_train_steps,tr_loss/nb_tr_steps))
                     #info={'loss':loss.item()}
-                    datachartpoint='{"chart": "live training loss", "y": {:.6f}, "x": {}}'.format(tr_loss/nb_tr_steps,step)
+                    datachartpoint='{"chart": "live training loss", '+'"y": {:.6f}, "x": {}}'.format(tr_loss/nb_tr_steps,step*args.train_batch_size)
                     print(datachartpoint)
                     '''
                     for tag,value in info.items():
