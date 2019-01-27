@@ -15,7 +15,7 @@ python rdc_classification.py \
   --data_dir rdc_dataset/ \
   --bert_model bert-large-uncased \
   --max_seq_length 70 \
-  --train_batch_size 256 \
+  --train_batch_size 32 \
   --eval_batch_size 800 \
   --learning_rate 2.5e-4 \
   --num_train_epochs 5.0 \
