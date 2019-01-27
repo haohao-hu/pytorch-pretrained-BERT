@@ -20,6 +20,6 @@ python rdc_classification.py \
   --learning_rate 2.5e-4 \
   --num_train_epochs 5.0 \
   --output_dir models/rdcd_output/ \
-  --fp16    
-  --doc_stride 128
+  --fp16 \   
+  --doc_stride 128 \
   --loss_scale 128 > /artifacts/e5-lr2.5e-4-bs32.log
