@@ -2,8 +2,8 @@
 #apt-get install unzip
 #pip install boto3
 #tar -xvzf ./rdc_dataset/train.tar.gz
-
-pip install pytorch-pretrained-bert
+pip install --editable .
+#pip install pytorch-pretrained-bert
 #pip install pytorch-pretrained-bert
 git clone https://github.com/NVIDIA/apex.git && cd apex && python setup.py install --cuda_ext --cpp_ext
 cd ..
