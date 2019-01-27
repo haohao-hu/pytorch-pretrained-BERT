@@ -447,6 +447,9 @@ def main():
     parser.add_argument("--do_lower_case",
                         action='store_true',
                         help="Set this flag if you are using an uncased model.")
+    parser.add_argument("--no_truncate",
+                        action='store_true',
+                        help="Set this flag if you are using whole sequence.")
     parser.add_argument("--train_batch_size",
                         default=32,
                         type=int,
@@ -613,7 +616,7 @@ def main():
     #logger_tb=Logger('./logs')
     if args.do_train:
         train_features = convert_examples_to_features(
-            train_examples, label_list, args.max_seq_length, tokenizer)
+            train_examples, label_list, args.max_seq_length, tokenizer, no_truncate=args.no_truncate)
         logger.info("***** Running training *****")
         logger.info("  Num examples = %d", len(train_examples))
         logger.info("  Batch size = %d", args.train_batch_size)
@@ -693,7 +696,7 @@ def main():
         for is_test in False,True:
             eval_examples = processor.get_dev_examples(args.data_dir,is_test)
             eval_features = convert_examples_to_features(
-                eval_examples, label_list, args.max_seq_length, tokenizer)
+                eval_examples, label_list, args.max_seq_length, tokenizer, no_truncate=args.no_truncate)
             logger.info("***** Running evaluation on Test set:{}".format(str(is_test)))
             logger.info("  Num examples = %d", len(eval_examples))
             logger.info("  Batch size = %d", args.eval_batch_size)
