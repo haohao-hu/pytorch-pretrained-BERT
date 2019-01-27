@@ -361,8 +361,6 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
         assert len(segment_ids) == max_seq_length
 
         label_id = label_map[example.label]
-        logger.info("Do not Truncate: %s" % (str(no_truncate)))
-        logger.info("Max sequence length: %d" % (max_seq_length))
         if ex_index < 5:
             logger.info("*** Example ***")
             logger.info("guid: %s" % (example.guid))
@@ -379,6 +377,8 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
                               input_mask=input_mask,
                               segment_ids=segment_ids,
                               label_id=label_id))
+    logger.info("Do not Truncate: %s" % (str(no_truncate)))
+    logger.info("Max sequence length: %d" % (max_seq_length))
     return features
 
 
