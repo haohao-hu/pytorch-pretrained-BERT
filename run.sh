@@ -3,6 +3,10 @@
 pip install boto3
 untar ./rdc_dataset/train.tar.gz
 
+git clone https://github.com/NVIDIA/apex.git && cd apex && python setup.py install --cuda_ext --cpp_ext
+
+#pip install pytorch-pretrained-bert
+
 python rdc_classification.py \
   --task_name rdcd\
   --do_train \
