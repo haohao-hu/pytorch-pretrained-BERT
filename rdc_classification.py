@@ -654,7 +654,7 @@ def main():
                 if (global_step+1)%25==0:
                     print('Step[{}/{}],Loss: {:.4f}'.format(global_step+1,num_train_steps,tr_loss/nb_tr_steps))
                     #info={'loss':loss.item()}
-                    datachartpoint='{"chart": "live training loss", '+'"y": {:.6f}, "x": {}}'.format(tr_loss/nb_tr_steps,global_step*args.train_batch_size)
+                    datachartpoint='{"chart": "live training loss", ' + '"y": {:.6f}, "x": {}}}'.format(tr_loss/nb_tr_steps,global_step*args.train_batch_size)
                     print(datachartpoint)
                     '''
                     for tag,value in info.items():
