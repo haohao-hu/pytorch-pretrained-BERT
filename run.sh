@@ -1,7 +1,7 @@
 #pip install zip unzip
-apt-get install unzip
+#apt-get install unzip
 pip install boto3
-unzip ./rdc_dataset/train.zip
+untar ./rdc_dataset/train.tar.gz
 
 python rdc_classification.py \
   --task_name rdcd\
