@@ -208,8 +208,8 @@ class RdcdProcessor(DataProcessor):
         """See base class."""
         if no_truncate:
             return self._create_examples(
-            self._read_tsv((os.path.join(data_dir, "train.tsv"),os.path.join(data_dir, "val.tsv")
-                           ,os.path.join(data_dir, "rdc-catalog-gold.tsv"))), "whole dataset (train,test and dev)")
+            self._read_tsv(os.path.join(data_dir, "train.tsv"),os.path.join(data_dir, "val.tsv")
+                           ,os.path.join(data_dir, "rdc-catalog-gold.tsv")), "whole dataset (train,test and dev)")
         else:
             return self._create_examples(
                 self._read_tsv(os.path.join(data_dir, "train.tsv")), "train")
