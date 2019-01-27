@@ -621,6 +621,8 @@ def main():
     nb_tr_steps = 0
     tr_loss = 0
     #logger_tb=Logger('./logs')
+    print('{"chart": "loss", "axis": "Iteration"}')
+    print('{"chart": "accuracy", "axis": "Iteration"}')
     if args.do_train:
         train_features = convert_examples_to_features(
             train_examples, label_list, args.max_seq_length, tokenizer, no_truncate=args.no_truncate)
@@ -681,7 +683,7 @@ def main():
                     #info={'loss':loss.item()}
                     #datachartpoint='{"chart": "live training loss", ' + '"y": {:.6f}, "x": {}}}'.format(tr_loss/nb_tr_steps,global_step*args.train_batch_size)
                     #print(datachartpoint)
-                    
+                    print('{"chart": "loss", "x": ' +str(global_step*args.train_batch_size) + ', "y": {:.6f}}}'.format(loss))
                     logger.info('{"chart": "loss", "x": ' +str(global_step*args.train_batch_size) + ', "y": {:.6f}}}'.format(tr_loss/nb_tr_steps))
                     '''
                     for tag,value in info.items():
