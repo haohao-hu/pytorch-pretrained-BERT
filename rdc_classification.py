@@ -27,12 +27,12 @@ import logging
 import argparse
 import random
 from tqdm import tqdm, trange
-import apex
+#import apex
 import numpy as np
 import torch
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 from torch.utils.data.distributed import DistributedSampler
-from logger import Logger
+#from logger import Logger
 from sklearn.metrics import precision_recall_fscore_support as fscore
 
 from pytorch_pretrained_bert.tokenization import BertTokenizer
