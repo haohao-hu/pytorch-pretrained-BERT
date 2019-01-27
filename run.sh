@@ -1,3 +1,5 @@
+pip install zip unzip
+pip install boto3
 unzip ./rdc_dataset/train.zip
 
 python rdc_classification.py \
