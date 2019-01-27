@@ -95,13 +95,15 @@ class DataProcessor(object):
         raise NotImplementedError()
 
     @classmethod
-    def _read_tsv(cls, input_file, quotechar=None, filedelimiter="\t"):
+    def _read_tsv(cls, *input_file, quotechar=None, filedelimiter="\t"):
         """Reads a tab separated value file."""
-        with open(input_file, "r", encoding='utf-8') as f:
-            reader = csv.reader(f, delimiter=filedelimiter, quotechar=quotechar)
-            lines = []
-            for line in reader:
-                lines.append(line)
+        lines = []
+        for inputf in input_file:
+            with open(inputf, "r", encoding='utf-8') as f:
+                reader = csv.reader(f, delimiter=filedelimiter, quotechar=quotechar)
+
+                for line in reader:
+                    lines.append(line)
             return lines
 
 
@@ -202,10 +204,15 @@ class ColaProcessor(DataProcessor):
 class RdcdProcessor(DataProcessor):
     """Processor for the SIGIR eCom Rakuten Data Challenge Dataset."""
 
-    def get_train_examples(self, data_dir):
+    def get_train_examples(self, data_dir, no_truncate=False):
         """See base class."""
-        return self._create_examples(
-            self._read_tsv(os.path.join(data_dir, "train.tsv")), "train")
+        if no_truncate:
+            return self._create_examples(
+            self._read_tsv((os.path.join(data_dir, "train.tsv"),os.path.join(data_dir, "val.tsv")
+                           ,os.path.join(data_dir, "rdc-catalog-gold.tsv"))), "whole dataset (train,test and dev)")
+        else:
+            return self._create_examples(
+                self._read_tsv(os.path.join(data_dir, "train.tsv")), "train")
 
     def get_dev_examples(self, data_dir, is_test=False):
         """See base class."""
@@ -557,7 +564,7 @@ def main():
     train_examples = None
     num_train_steps = None
     if args.do_train:
-        train_examples = processor.get_train_examples(args.data_dir)
+        train_examples = processor.get_train_examples(args.data_dir, no_truncate=args.no_truncate)
         num_train_steps = int(
             len(train_examples) / args.train_batch_size / args.gradient_accumulation_steps * args.num_train_epochs)
 
