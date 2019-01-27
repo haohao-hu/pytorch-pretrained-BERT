@@ -15,11 +15,11 @@ python rdc_classification.py \
   --data_dir rdc_dataset/ \
   --bert_model bert-large-uncased \
   --max_seq_length 160 \
-  --train_batch_size 240 \
+  --train_batch_size 200 \
   --eval_batch_size 800 \
-  --learning_rate 5e-4 \
+  --learning_rate 3e-4 \
   --num_train_epochs 5.0 \
-  --output_dir models/rdcd_output/  > /artifacts/e5-lr5e-4-bs240.log
+  --output_dir models/rdcd_output/  > /artifacts/e5-lr3e-4-bs200.log
 
   #--no_truncate \
   #--fp16 \   
