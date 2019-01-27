@@ -1,4 +1,5 @@
-pip install zip unzip
+#pip install zip unzip
+apt-get install unzip
 pip install boto3
 unzip ./rdc_dataset/train.zip
 
