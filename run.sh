@@ -17,9 +17,10 @@ python rdc_classification.py \
   --max_seq_length 160 \
   --train_batch_size 64 \
   --eval_batch_size 800 \
-  --learning_rate 2e-4 \
+  --learning_rate 1e-4 \
   --num_train_epochs 5.0 \
-  --output_dir models/rdcd_output/  > /artifacts/e5-lr2e-4-bs64.log
+  --warmup_proportion 0.01 \
+  --output_dir models/rdcd_output/  > /artifacts/e5-lr1e-4-bs64-wm0.01.log
 
   #--no_truncate \
   #--fp16 \   
