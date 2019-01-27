@@ -289,7 +289,7 @@ def score(preds, targs):
         p, r, f1, _ = fscore(targs, preds, pos_label=None, average='weighted')
     return p, r, f1
 
-def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer):
+def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer, no_truncate=False):
     """Loads a data file into a list of `InputBatch`s."""
 
     label_map = {label : i for i, label in enumerate(label_list)}
@@ -301,14 +301,23 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
         tokens_b = None
         if example.text_b:
             tokens_b = tokenizer.tokenize(example.text_b)
+            if no_truncate:
+                if len(tokens_a)+len(tokens_b) > max_seq_length - 3:
+                    max_seq_length=len(tokens_a) +len(tokens_b) + 3
+            else:
             # Modifies `tokens_a` and `tokens_b` in place so that the total
             # length is less than the specified length.
             # Account for [CLS], [SEP], [SEP] with "- 3"
-            _truncate_seq_pair(tokens_a, tokens_b, max_seq_length - 3)
+                _truncate_seq_pair(tokens_a, tokens_b, max_seq_length - 3)
         else:
-            # Account for [CLS] and [SEP] with "- 2"
-            if len(tokens_a) > max_seq_length - 2:
-                tokens_a = tokens_a[:(max_seq_length - 2)]
+            if no_truncate:
+                # Account for [CLS] and [SEP] with "- 2"
+                if len(tokens_a) > max_seq_length - 2:
+                    max_seq_length=len(tokens_a) + 2
+            else:
+                # Account for [CLS] and [SEP] with "- 2"
+                if len(tokens_a) > max_seq_length - 2:
+                    tokens_a = tokens_a[:(max_seq_length - 2)]
 
         # The convention in BERT is:
         # (a) For sequence pairs:
@@ -352,6 +361,8 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
         assert len(segment_ids) == max_seq_length
 
         label_id = label_map[example.label]
+        logger.info("Do not Truncate: %s" % (str(no_truncate)))
+        logger.info("Max sequence length: %d" % (max_seq_length))
         if ex_index < 5:
             logger.info("*** Example ***")
             logger.info("guid: %s" % (example.guid))
