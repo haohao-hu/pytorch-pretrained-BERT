@@ -522,6 +522,7 @@ def main():
     #train_examples = None
     num_train_steps = None
     if args.do_train:
+        print('{"chart": "loss", "axis": "Iteration"}')
         print("Loading Train Dataset", args.train_file)
         train_dataset = BERTDataset(args.train_file, tokenizer, seq_len=args.max_seq_length,
                                     corpus_lines=None, on_memory=args.on_memory)
@@ -587,6 +588,8 @@ def main():
         train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size)
 
         model.train()
+        output_log_file = os.path.join(args.output_dir, "training.log")
+        f_log=open(output_log_file,"w",encoding="utf-8")
         for _ in trange(int(args.num_train_epochs), desc="Epoch"):
             tr_loss = 0
             nb_tr_examples, nb_tr_steps = 0, 0
@@ -613,6 +616,16 @@ def main():
                     optimizer.step()
                     optimizer.zero_grad()
                     global_step += 1
+                if (global_step+1)%25==0:
+                    logger.info('Step[{}/{}],Loss: {:.4f}'.format(global_step+1,num_train_steps,tr_loss/nb_tr_steps))
+                    print('Step[{}/{}],Loss: {:.4f}'.format(global_step+1,num_train_steps,tr_loss/nb_tr_steps))
+                    #info={'loss':loss.item()}
+                    #datachartpoint='{"chart": "live training loss", ' + '"y": {:.6f}, "x": {}}}'.format(tr_loss/nb_tr_steps,global_step*args.train_batch_size)
+                    #print(datachartpoint)
+                    print('{"chart": "loss", "x": ' +str(global_step*args.train_batch_size) + ', "y": {:.6f}}}'.format(loss))
+                    logger.info('{"chart": "loss", "x": ' +str(global_step*args.train_batch_size) + ', "y": {:.6f}}}'.format(tr_loss/nb_tr_steps))
+                    f_log.write('{"chart": "loss", "number of iterations": ' +str(global_step*args.train_batch_size) + ', "average loss": {:.6f},"loss":{:.6f}}}\n'.format(tr_loss/nb_tr_steps,loss))
+                
 
         # Save a trained model
         logger.info("** ** * Saving fine - tuned model ** ** * ")
