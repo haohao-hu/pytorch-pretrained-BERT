@@ -16,7 +16,7 @@ python /storage/pytorch-pretrained-BERT/run_lm_finetuning_rdcd.py \
   --output_dir /storage/pytorch-pretrained-BERT/models/rdcd_fine_tune_lm_no_truncate_testing \
   --num_train_epochs 5.0 \
   --learning_rate 6e-5 \
-  --train_batch_size 64 \
+  --train_batch_size 80 \
   --no_truncate \
   --max_seq_length 108 
   #--max_seq_length 164 #> /artifacts/e5-lr3e-5-bs64-bert-lm.log
