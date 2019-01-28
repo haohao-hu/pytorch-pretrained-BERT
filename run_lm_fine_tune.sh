@@ -8,7 +8,8 @@ pip install --editable .
 #git clone https://github.com/NVIDIA/apex.git && cd apex && python setup.py install --cuda_ext --cpp_ext
 #cd ..
 
-python /storage/pytorch-pretrained-BERT/run_lm_finetuning_rdcd.py \
+#python /storage/pytorch-pretrained-BERT/run_lm_finetuning_rdcd.py \
+python run_lm_finetuning_rdcd.py \
   --bert_model bert-large-uncased \
   --do_train \
   --do_lower_case \
