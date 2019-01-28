@@ -32,7 +32,7 @@ from torch.utils.data.distributed import DistributedSampler
 from pytorch_pretrained_bert.tokenization import BertTokenizer
 from pytorch_pretrained_bert.modeling import BertForPreTraining
 from pytorch_pretrained_bert.optimization import BertAdam
-
+import ftfy
 from torch.utils.data import Dataset
 import random
 
@@ -77,6 +77,7 @@ class BERTDataset(Dataset):
             with open(corpus_path, "r", encoding=encoding) as f:
                 for line in tqdm(f, desc="Loading Dataset", total=corpus_lines):
                     line = line.strip()
+                    line=ftfy.fix_text(line)
                     if line == "":
                         self.all_docs.append(doc)
                         doc = []
