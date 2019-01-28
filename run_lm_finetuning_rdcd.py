@@ -49,7 +49,7 @@ def warmup_linear(x, warmup=0.002):
 
 
 class BERTDataset(Dataset):
-    def __init__(self, corpus_path, tokenizer, seq_len, encoding="utf-8", corpus_lines=None, on_memory=True):
+    def __init__(self, corpus_path, tokenizer, seq_len, encoding="utf-8", corpus_lines=None, on_memory=True, no_truncate=False):
         self.vocab = tokenizer.vocab
         self.tokenizer = tokenizer
         self.seq_len = seq_len
@@ -58,6 +58,7 @@ class BERTDataset(Dataset):
         self.corpus_path = corpus_path
         self.encoding = encoding
         self.current_doc = 0  # to avoid random sentence from same doc
+        self.no_truncate=no_truncate
 
         # for loading samples directly from file
         self.sample_counter = 0  # used to keep track of full epochs on file
@@ -132,12 +133,15 @@ class BERTDataset(Dataset):
         # tokenize
         tokens_a = self.tokenizer.tokenize(t1)
         tokens_b = self.tokenizer.tokenize(t2)
+        if len(tokens_b)==0:
+            logger.info("Error in tokenization: ",t2)
+        assert len(tokens_b)>0
 
         # combine to one sample
         cur_example = InputExample(guid=cur_id, tokens_a=tokens_a, tokens_b=tokens_b, is_next=is_next_label)
 
         # transform sample to features
-        cur_features = convert_example_to_features(cur_example, self.seq_len, self.tokenizer)
+        cur_features = convert_example_to_features(cur_example, self.seq_len, self.tokenizer,self.no_truncate)
 
         cur_tensors = (torch.tensor(cur_features.input_ids),
                        torch.tensor(cur_features.input_mask),
@@ -311,7 +315,7 @@ def random_word(tokens, tokenizer):
     return tokens, output_label
 
 
-def convert_example_to_features(example, max_seq_length, tokenizer):
+def convert_example_to_features(example, max_seq_length, tokenizer, no_truncate=False):
     """
     Convert a raw sample (pair of sentences as tokenized strings) into a proper training sample with
     IDs, LM labels, input_mask, CLS and SEP tokens etc.
@@ -322,10 +326,16 @@ def convert_example_to_features(example, max_seq_length, tokenizer):
     """
     tokens_a = example.tokens_a
     tokens_b = example.tokens_b
+    if no_truncate:
+        if len(tokens_a)+len(tokens_b) > max_seq_length - 3:
+            max_seq_length=len(tokens_a) +len(tokens_b) + 3
+            logger.info("Do not Truncate: %s" % (str(no_truncate)))
+            logger.info("Max sequence length: %d" % (max_seq_length))
+    else:
     # Modifies `tokens_a` and `tokens_b` in place so that the total
     # length is less than the specified length.
     # Account for [CLS], [SEP], [SEP] with "- 3"
-    _truncate_seq_pair(tokens_a, tokens_b, max_seq_length - 3)
+        _truncate_seq_pair(tokens_a, tokens_b, max_seq_length - 3)
 
     t1_random, t1_label = random_word(tokens_a, tokenizer)
     t2_random, t2_label = random_word(tokens_b, tokenizer)
@@ -402,6 +412,7 @@ def convert_example_to_features(example, max_seq_length, tokenizer):
                              segment_ids=segment_ids,
                              lm_label_ids=lm_label_ids,
                              is_next=example.is_next)
+
     return features
 
 
@@ -483,6 +494,9 @@ def main():
                         help = "Loss scaling to improve fp16 numeric stability. Only used when fp16 set to True.\n"
                         "0 (default value): dynamic loss scaling.\n"
                         "Positive power of 2: static loss scaling value.\n")
+    parser.add_argument("--no_truncate",
+                        action='store_true',
+                        help="Set this flag if you are finding max sequence length.")
 
     args = parser.parse_args()
 
@@ -525,7 +539,7 @@ def main():
         print('{"chart": "loss", "axis": "Iteration"}')
         print("Loading Train Dataset", args.train_file)
         train_dataset = BERTDataset(args.train_file, tokenizer, seq_len=args.max_seq_length,
-                                    corpus_lines=None, on_memory=args.on_memory)
+                                    corpus_lines=None, on_memory=args.on_memory,no_truncate=args.no_truncate)
         num_train_steps = int(
             len(train_dataset) / args.train_batch_size / args.gradient_accumulation_steps * args.num_train_epochs)
 
