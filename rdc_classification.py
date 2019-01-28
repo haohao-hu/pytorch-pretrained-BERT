@@ -95,7 +95,7 @@ class DataProcessor(object):
         raise NotImplementedError()
 
     @classmethod
-    def _read_tsv(cls, *input_file, quotechar=None, filedelimiter="\t"):
+    def _read_tsv(cls, input_file, quotechar=None, filedelimiter="\t"):
         """Reads a tab separated value file."""
         lines = []
         for inputf in input_file:
@@ -104,7 +104,7 @@ class DataProcessor(object):
 
                 for line in reader:
                     lines.append(line)
-            return lines
+        return lines
 
 
 class MrpcProcessor(DataProcessor):
@@ -208,8 +208,8 @@ class RdcdProcessor(DataProcessor):
         """See base class."""
         if no_truncate:
             return self._create_examples(
-            self._read_tsv(os.path.join(data_dir, "train.tsv"),os.path.join(data_dir, "val.tsv")
-                           ,os.path.join(data_dir, "rdc-catalog-gold.tsv")), "whole dataset (train,test and dev)")
+           self._read_tsv(input_files=(os.path.join(data_dir, "train.tsv"),os.path.join(data_dir, "val.tsv")
+                           ,os.path.join(data_dir, "rdc-catalog-gold.tsv"))), "whole dataset (train,test and dev)")
         else:
             return self._create_examples(
                 self._read_tsv(os.path.join(data_dir, "train.tsv")), "train")
