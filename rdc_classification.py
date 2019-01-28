@@ -100,7 +100,7 @@ class DataProcessor(object):
         """Reads a tab separated value file."""
         lines = []
         for inputf in input_file:
-            with open(inputf, "r", encoding='latin-1') as f:   #utf-8
+            with open(inputf, "r", encoding='utf-8') as f:   #utf-8
                 reader = csv.reader(f, delimiter=filedelimiter, quotechar=quotechar)
 
                 for line in reader:
