@@ -49,7 +49,7 @@ def warmup_linear(x, warmup=0.002):
 
 
 class BERTDataset(Dataset):
-    def __init__(self, corpus_path, tokenizer, seq_len, encoding="latin-1", #"utf-8", 
+    def __init__(self, corpus_path, tokenizer, seq_len, encoding="utf-8", 
                  corpus_lines=None, on_memory=True, no_truncate=False):
         self.vocab = tokenizer.vocab
         self.tokenizer = tokenizer
