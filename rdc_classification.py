@@ -30,6 +30,7 @@ from tqdm import tqdm, trange
 #import apex
 import numpy as np
 import torch
+import ftfy
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 from torch.utils.data.distributed import DistributedSampler
 #from logger import Logger
@@ -303,11 +304,13 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
 
     features = []
     for (ex_index, example) in enumerate(examples):
-        tokens_a = tokenizer.tokenize(example.text_a)
+        text_a_fixed=ftfy.fix_text(example.text_a)
+        tokens_a = tokenizer.tokenize(text_a_fixed)
 
         tokens_b = None
         if example.text_b:
-            tokens_b = tokenizer.tokenize(example.text_b)
+            text_b_fixed=ftfy.fix_text(example.text_b)
+            tokens_b = tokenizer.tokenize(text_b_fixed)
             if no_truncate:
                 if len(tokens_a)+len(tokens_b) > max_seq_length - 3:
                     max_seq_length=len(tokens_a) +len(tokens_b) + 3
