@@ -32,7 +32,7 @@ from torch.utils.data.distributed import DistributedSampler
 from pytorch_pretrained_bert.tokenization import BertTokenizer
 from pytorch_pretrained_bert.modeling import BertForPreTraining
 from pytorch_pretrained_bert.optimization import BertAdam
-import ftfy
+
 from torch.utils.data import Dataset
 import random
 
@@ -47,10 +47,9 @@ def warmup_linear(x, warmup=0.002):
         return x/warmup
     return 1.0 - x
 
-
+#dataset_path
 class BERTDataset(Dataset):
-    def __init__(self, corpus_path, tokenizer, seq_len, encoding="utf-8", 
-                 corpus_lines=None, on_memory=True, no_truncate=False):
+    def __init__(self, corpus_path, tokenizer, seq_len, classes_path, encoding="utf-8", corpus_lines=None, on_memory=True, no_truncate=False, with_category=False):
         self.vocab = tokenizer.vocab
         self.tokenizer = tokenizer
         self.seq_len = seq_len
@@ -60,6 +59,9 @@ class BERTDataset(Dataset):
         self.encoding = encoding
         self.current_doc = 0  # to avoid random sentence from same doc
         self.no_truncate=no_truncate
+        self.with_category=with_category
+        self.classes_path=classes_path
+        self.unknown_cat=False
 
         # for loading samples directly from file
         self.sample_counter = 0  # used to keep track of full epochs on file
@@ -75,27 +77,42 @@ class BERTDataset(Dataset):
             self.all_docs = []
             doc = []
             self.corpus_lines = 0
+            self.categories=get_labels(self, data_dir=self.classes_path)
             with open(corpus_path, "r", encoding=encoding) as f:
                 for line in tqdm(f, desc="Loading Dataset", total=corpus_lines):
                     line = line.strip()
-                    line=ftfy.fix_text(line)
-                    if line == "":
-                        self.all_docs.append(doc)
-                        doc = []
-                        #remove last added sample because there won't be a subsequent line anymore in the doc
-                        self.sample_to_doc.pop()
-                    else:
+                    if with_category:
+                        line=line.split('\t')
+                        cat=line[1].strip('\n')
+                        
                         #store as one sample
-                        sample = {"doc_id": len(self.all_docs),
-                                  "line": len(doc)}
+                        sample = {"category_encode": self.categories.get(cat),
+                                 "within_cat_doc_id": len(self.all_docs[self.categories.get(cat)]), 
+                                 }
                         self.sample_to_doc.append(sample)
-                        doc.append(line)
+                        doc.append((line[0],cat))
                         self.corpus_lines = self.corpus_lines + 1
+                        self.all_docs[self.categories.get(cat)].append(doc)
+                        doc=[]
+                    else:
+                        if line == "":
+                            self.all_docs.append(doc)
+                            doc = []
+                        #remove last added sample because there won't be a subsequent line anymore in the doc
+                            self.sample_to_doc.pop()
+                        else:
+                        #store as one sample
+                            sample = {"doc_id": len(self.all_docs),
+                                  "line": len(doc)}
+                            self.sample_to_doc.append(sample)
+                            doc.append(line)
+                            self.corpus_lines = self.corpus_lines + 1
 
             # if last row in file is not empty
             if self.all_docs[-1] != doc:
                 self.all_docs.append(doc)
-                self.sample_to_doc.pop()
+                if not with_category:
+                    self.sample_to_doc.pop()
 
             self.num_docs = len(self.all_docs)
 
@@ -117,9 +134,22 @@ class BERTDataset(Dataset):
             self.file = open(corpus_path, "r", encoding=encoding)
             self.random_file = open(corpus_path, "r", encoding=encoding)
 
+    def get_labels(self, data_dir):
+        """See base class."""
+        with open(data_dir, "r", encoding='utf-8') as f:
+            lines = {}
+            for i,line in enumerate(f):
+                lines[str(line).strip('\n')]=i
+            lines["<unknown>"]=3008
+            assert len(lines)==3009
+            return lines
+        
     def __len__(self):
         # last line of doc won't be used, because there's no "nextSentence". Additionally, we start counting at 0.
-        return self.corpus_lines - self.num_docs - 1
+        if self.with_category:
+            return self.corpus_lines - self.num_docs
+        else:
+            return self.corpus_lines - self.num_docs - 1
 
     def __getitem__(self, item):
         cur_id = self.sample_counter
@@ -161,8 +191,11 @@ class BERTDataset(Dataset):
         :return: (str, str, int), sentence 1, sentence 2, isNextSentence Label
         """
         t1, t2 = self.get_corpus_line(index)
-        if random.random() > 0.5:
+        
+        if random.random() > 0.375:#0.5:#set lower value to account for unknown category
             label = 0
+            if self.unknown_cat:
+                label=1
         else:
             t2 = self.get_random_line()
             label = 1
@@ -170,6 +203,7 @@ class BERTDataset(Dataset):
         assert len(t1) > 0
         assert len(t2) > 0
         return t1, t2, label
+    
 
     def get_corpus_line(self, item):
         """
@@ -182,10 +216,21 @@ class BERTDataset(Dataset):
         assert item < self.corpus_lines
         if self.on_memory:
             sample = self.sample_to_doc[item]
-            t1 = self.all_docs[sample["doc_id"]][sample["line"]]
-            t2 = self.all_docs[sample["doc_id"]][sample["line"]+1]
+            if self.with_category:
+                #Get one sample from corpus consisting of a pair of two product titles of the same category id path.
+                t1,_ = self.all_docs[sample["category_encode"]][sample["within_cat_doc_id"]]
+                t2,_ = self.all_docs[sample["category_encode"]][sample["within_cat_doc_id"]+1]
+                # used later to avoid random title from same category
+                self.current_doc = sample["category_encode"]
+                if self.current_doc==3008:
+                    self.unknown_cat=True
+                else:
+                    self.unknown_cat=False
+            else:
+                t1 = self.all_docs[sample["doc_id"]][sample["line"]]
+                t2 = self.all_docs[sample["doc_id"]][sample["line"]+1]
             # used later to avoid random nextSentence from same doc
-            self.current_doc = sample["doc_id"]
+                self.current_doc = sample["doc_id"]
             return t1, t2
         else:
             if self.line_buffer is None:
@@ -218,15 +263,25 @@ class BERTDataset(Dataset):
         # the random document is not the same as the document we're processing.
         for _ in range(10):
             if self.on_memory:
-                rand_doc_idx = random.randint(0, len(self.all_docs)-1)
-                rand_doc = self.all_docs[rand_doc_idx]
-                line = rand_doc[random.randrange(len(rand_doc))]
+                if self.with_category:
+                    """
+        Get random title from another category for similarity task.
+        :return: str, content of one title self.categories
+        """
+                    rand_doc_idx = random.randint(0, len(self.categories))
+                    rand_doc = self.all_docs[rand_doc_idx]
+                    line,_ = rand_doc[random.randrange(len(rand_doc))]
+                    self.current_random_doc = rand_doc_idx
+                else:
+                    rand_doc_idx = random.randint(0, len(self.all_docs)-1)
+                    rand_doc = self.all_docs[rand_doc_idx]
+                    line = rand_doc[random.randrange(len(rand_doc))]
             else:
                 rand_index = random.randint(1, self.corpus_lines if self.corpus_lines < 1000 else 1000)
                 #pick random line
                 for _ in range(rand_index):
                     line = self.get_next_line()
-            #check if our picked random line is really from another doc like we want it to be
+            #check if our picked random line is really from another doc/category like we want it to be
             if self.current_random_doc != self.current_doc:
                 break
         return line
@@ -263,7 +318,7 @@ class InputExample(object):
         self.guid = guid
         self.tokens_a = tokens_a
         self.tokens_b = tokens_b
-        self.is_next = is_next  # nextSentence
+        self.is_next = is_next  # nextSentence or same category
         self.lm_labels = lm_labels  # masked words for language model
 
 
@@ -427,6 +482,10 @@ def main():
                         type=str,
                         required=True,
                         help="The input train corpus.")
+    parser.add_argument("--classes_file",
+                        default=None,
+                        type=str,
+                        help="The input classes in train corpus.")
     parser.add_argument("--bert_model", default=None, type=str, required=True,
                         help="Bert pre-trained model selected in the list: bert-base-uncased, "
                              "bert-large-uncased, bert-base-cased, bert-base-multilingual, bert-base-chinese.")
@@ -499,6 +558,9 @@ def main():
     parser.add_argument("--no_truncate",
                         action='store_true',
                         help="Set this flag if you are finding max sequence length.")
+    parser.add_argument("--with_category",
+                        action='store_true',
+                        help="Set this flag if you are using product title similarity task.")
 
     args = parser.parse_args()
 
@@ -541,7 +603,7 @@ def main():
         print('{"chart": "loss", "axis": "Iteration"}')
         print("Loading Train Dataset", args.train_file)
         train_dataset = BERTDataset(args.train_file, tokenizer, seq_len=args.max_seq_length,
-                                    corpus_lines=None, on_memory=args.on_memory,no_truncate=args.no_truncate)
+                                    corpus_lines=None, on_memory=args.on_memory,no_truncate=args.no_truncate,with_category=args.with_category,classes_path=args.classes_file)
         num_train_steps = int(
             len(train_dataset) / args.train_batch_size / args.gradient_accumulation_steps * args.num_train_epochs)
 
