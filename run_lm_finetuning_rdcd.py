@@ -173,7 +173,7 @@ class BERTDataset(Dataset):
         cur_example = InputExample(guid=cur_id, tokens_a=tokens_a, tokens_b=tokens_b, is_next=is_next_label)
 
         # transform sample to features
-        cur_features = convert_example_to_features(cur_example, self.seq_len, self.tokenizer,self.no_truncate)
+        cur_features = convert_example_to_features(cur_example, self.seq_len, self.tokenizer,self.no_truncate,self.with_category)
 
         cur_tensors = (torch.tensor(cur_features.input_ids),
                        torch.tensor(cur_features.input_mask),
@@ -194,7 +194,7 @@ class BERTDataset(Dataset):
         
         if random.random() > 0.375:#0.5:#set lower value to account for unknown category
             label = 0
-            if self.unknown_cat:
+            if self.unknown_cat and random.random() > 0.00033:
                 label=1
         else:
             t2 = self.get_random_line()
@@ -219,7 +219,11 @@ class BERTDataset(Dataset):
             if self.with_category:
                 #Get one sample from corpus consisting of a pair of two product titles of the same category id path.
                 t1,_ = self.all_docs[sample["category_encode"]][sample["within_cat_doc_id"]]
-                t2,_ = self.all_docs[sample["category_encode"]][sample["within_cat_doc_id"]+1]
+                rdn_idx=np.random.randint(0,len(self.all_docs[sample["category_encode"]]))
+                while rnd_idx==sample["within_cat_doc_id"]:
+                    rdn_idx=np.random.randint(0,
+                    len(self.all_docs[sample["category_encode"]]))
+                t2,_ = self.all_docs[sample["category_encode"]][rdn_idx]
                 # used later to avoid random title from same category
                 self.current_doc = sample["category_encode"]
                 if self.current_doc==3008:
@@ -372,7 +376,7 @@ def random_word(tokens, tokenizer):
     return tokens, output_label
 
 
-def convert_example_to_features(example, max_seq_length, tokenizer, no_truncate=False):
+def convert_example_to_features(example, max_seq_length, tokenizer, no_truncate=False,with_category=False):
     """
     Convert a raw sample (pair of sentences as tokenized strings) into a proper training sample with
     IDs, LM labels, input_mask, CLS and SEP tokens etc.
@@ -462,7 +466,10 @@ def convert_example_to_features(example, max_seq_length, tokenizer, no_truncate=
         logger.info(
                 "segment_ids: %s" % " ".join([str(x) for x in segment_ids]))
         logger.info("LM label: %s " % (lm_label_ids))
-        logger.info("Is next sentence label: %s " % (example.is_next))
+        if with_category:
+            logger.info("Is similar label: %s " % (example.is_next))
+        else:
+            logger.info("Is next sentence label: %s " % (example.is_next))
 
     features = InputFeatures(input_ids=input_ids,
                              input_mask=input_mask,
