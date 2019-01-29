@@ -15,13 +15,13 @@ python run_lm_finetuning_rdcd.py \
   --do_train \
   --do_lower_case \
   --train_file /storage/pytorch-pretrained-BERT/rdc_whole_set_with_unknown_category_in_va_te.tsv \
-  --output_dir /storage/pytorch-pretrained-BERT/models/rdcd_fine_tune_lm_no_truncate_testing_85 \
+  --output_dir /storage/pytorch-pretrained-BERT/models/rdcd_fine_tune_lm_no_truncate_testing_86 \
   --num_train_epochs 5.0 \
   --learning_rate 3e-5 \
-  --train_batch_size 40 \
+  --train_batch_size 32 \
   --max_seq_length 325 \
   --classes_file /storage/pytorch-pretrained-BERT/rdc_dataset/classes.txt \
-  --with_category
+  --with_category  > /artifacts/e5-lr3e-5-bs32-msl325-bert-lm-lg.log
   #--max_seq_length 164 #> /artifacts/e5-lr3e-5-bs64-bert-lm.log
   #--no_truncate \ --no_truncate \
   #--fp16 \   
