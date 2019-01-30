@@ -194,7 +194,7 @@ class BERTDataset(Dataset):
         
         if random.random() > 0.375:#0.5:#set lower value to account for unknown category
             label = 0
-            if self.unknown_cat and random.random() > 0.00033:
+            if self.unknown_cat and random.random() > 0.000332446809:
                 label=1
         else:
             t2 = self.get_random_line()
