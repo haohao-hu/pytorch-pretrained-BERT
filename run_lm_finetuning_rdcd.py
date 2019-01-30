@@ -738,9 +738,15 @@ def _truncate_seq_pair(tokens_a, tokens_b, max_length):
         if total_length <= max_length:
             break
         if len(tokens_a) > len(tokens_b):
-            tokens_a.pop()
+            if random.random() > 0.5:
+                tokens_a.pop()
+            else:
+                del tokens_a[0]
         else:
-            tokens_b.pop()
+            if random.random() > 0.5:
+                tokens_b.pop()
+            else:
+                del tokens_b[0]
 
 
 def accuracy(out, labels):
