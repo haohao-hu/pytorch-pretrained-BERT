@@ -199,6 +199,8 @@ class BERTDataset(Dataset):
         else:
             t2 = self.get_random_line()
             label = 1
+            if self.unknown_cat and random.random() <= 0.000332446809:
+                label=0
 
         assert len(t1) > 0
         assert len(t2) > 0
