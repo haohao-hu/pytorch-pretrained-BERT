@@ -192,7 +192,7 @@ class BERTDataset(Dataset):
         """
         t1, t2 = self.get_corpus_line(index)
         
-        if random.random() > 0.375:#0.5:#set lower value to account for unknown category
+        if random.random() > 0.375:#0.5:#set lower value to account for unknown category (40% in training data), set 0.4444 if only 20% of training data's category is unknown
             label = 0
             if self.unknown_cat and random.random() > 0.000332446809:
                 label=1
