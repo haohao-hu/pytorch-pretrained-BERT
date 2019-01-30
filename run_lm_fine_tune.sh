@@ -21,6 +21,7 @@ python run_lm_finetuning_rdcd.py \
   --train_batch_size 32 \
   --max_seq_length 325 \
   --classes_file /storage/pytorch-pretrained-BERT/rdc_dataset/classes.txt \
+  --on_memory \
   --with_category  > /artifacts/e5-lr3e-5-bs32-msl325-bert-lm-lg.log
   #--max_seq_length 164 #> /artifacts/e5-lr3e-5-bs64-bert-lm.log
   #--no_truncate \ --no_truncate \
