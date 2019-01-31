@@ -53,8 +53,8 @@ def get_labels(data_dir):
         lines = {}
         for i,line in enumerate(f):
             lines[str(line).strip('\n')]=i
-        lines["<unknown>"]=3008
-        assert len(lines)==3009
+        #lines["<unknown>"]=3008
+        assert len(lines)==3008
     return lines
 #dataset_path
 class BERTDataset(Dataset):
@@ -193,11 +193,13 @@ class BERTDataset(Dataset):
         # tokenize
         tokens_a = self.tokenizer.tokenize(t1)
         tokens_b = self.tokenizer.tokenize(t2)
+        '''
         while len(tokens_b)+len(tokens_a)>self.seq_len-3+self.truncate_length:
             t1, t2 = self.get_corpus_line(index)
             # tokenize
             tokens_a = self.tokenizer.tokenize(t1)
             tokens_b = self.tokenizer.tokenize(t2)
+            '''
         if random.random() > 0.375:#0.5:#set lower value to account for unknown category (40% in training data), set 0.4444 if only 20% of training data's category is unknown
             label = 0
             if self.unknown_cat and random.random() > 0.000332446809:
@@ -205,9 +207,11 @@ class BERTDataset(Dataset):
         else:
             t2 = self.get_random_line()
             tokens_b = self.tokenizer.tokenize(t2)
+            '''
             while len(tokens_b)+len(tokens_a)>self.seq_len-3+self.truncate_length:
                 t2 = self.get_random_line()
                 tokens_b = self.tokenizer.tokenize(t2)
+                '''
             label = 1
             if self.unknown_cat and random.random() <= 0.000332446809:
                 label=0
