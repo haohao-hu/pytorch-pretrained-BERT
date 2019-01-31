@@ -15,7 +15,7 @@ python run_lm_finetuning_rdcd.py \
   --do_train \
   --do_lower_case \
   --train_file /storage/pytorch-pretrained-BERT/rdc_dataset/train.tsv \
-  --output_dir /storage/pytorch-pretrained-BERT/models/rdcd_fine_tune_lm_testing_train600k \
+  --output_dir /storage/pytorch-pretrained-BERT/models/rdcd_fine_tune_lm_testing_train600k_2 \
   --num_train_epochs 5.0 \
   --learning_rate 3.5e-5 \
   --train_batch_size 32 \
