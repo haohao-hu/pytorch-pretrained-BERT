@@ -282,7 +282,7 @@ class BERTDataset(Dataset):
         Get random title from another category for similarity task.
         :return: str, content of one title self.categories
         """
-                    rand_doc_idx = random.randint(0, len(self.categories))
+                    rand_doc_idx = random.randint(0, len(self.categories)-1)
                     rand_doc = self.all_docs[rand_doc_idx]
                     line,_ = rand_doc[random.randrange(len(rand_doc))][0]
                     self.current_random_doc = rand_doc_idx
