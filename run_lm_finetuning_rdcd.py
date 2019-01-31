@@ -100,7 +100,6 @@ class BERTDataset(Dataset):
                                  }
                         self.sample_to_doc.append(sample)
                         doc.append((line[0],cat))
-                        self.corpus_lines = self.corpus_lines + 1
                         self.all_docs[self.categories.get(cat)].append(doc)
                         doc=[]
                         self.corpus_lines = self.corpus_lines + 1
