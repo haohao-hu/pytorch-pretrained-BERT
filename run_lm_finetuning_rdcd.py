@@ -83,10 +83,10 @@ class BERTDataset(Dataset):
 
         # load samples into memory
         if on_memory:
-            self.all_docs = []
             doc = []
             self.corpus_lines = 0
             self.categories=get_labels(data_dir=self.classes_path)
+            self.all_docs = [[] for i in range(len(self.categories))]
             with open(corpus_path, "r", encoding=encoding) as f:
                 for line in tqdm(f, desc="Loading Dataset", total=corpus_lines):
                     line = line.strip()
@@ -103,6 +103,7 @@ class BERTDataset(Dataset):
                         self.corpus_lines = self.corpus_lines + 1
                         self.all_docs[self.categories.get(cat)].append(doc)
                         doc=[]
+                        self.corpus_lines = self.corpus_lines + 1
                     else:
                         if line == "":
                             self.all_docs.append(doc)
