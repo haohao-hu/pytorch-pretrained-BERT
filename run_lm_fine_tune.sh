@@ -15,7 +15,7 @@ python run_lm_finetuning_rdcd.py \
   --do_train \
   --do_lower_case \
   --train_file /storage/pytorch-pretrained-BERT/rdc_whole_set_with_unknown_category_in_va_te.tsv \
-  --output_dir /storage/pytorch-pretrained-BERT/models/rdcd_fine_tune_lm_testing_86_5 \
+  --output_dir /storage/pytorch-pretrained-BERT/models/rdcd_fine_tune_lm_testing_86_6 \
   --num_train_epochs 5.0 \
   --learning_rate 3e-5 \
   --train_batch_size 32 \
