@@ -219,12 +219,12 @@ class BERTDataset(Dataset):
             sample = self.sample_to_doc[item]
             if self.with_category:
                 #Get one sample from corpus consisting of a pair of two product titles of the same category id path.
-                t1,_ = self.all_docs[sample["category_encode"]][sample["within_cat_doc_id"]]
+                (t1,_) = self.all_docs[sample["category_encode"]][sample["within_cat_doc_id"]]
                 rdn_idx=np.random.randint(0,len(self.all_docs[sample["category_encode"]]))
                 while rnd_idx==sample["within_cat_doc_id"]:
                     rdn_idx=np.random.randint(0,
                     len(self.all_docs[sample["category_encode"]]))
-                t2,_ = self.all_docs[sample["category_encode"]][rdn_idx]
+                (t2,_) = self.all_docs[sample["category_encode"]][rdn_idx]
                 # used later to avoid random title from same category
                 self.current_doc = sample["category_encode"]
                 if self.current_doc==3008:
@@ -275,7 +275,7 @@ class BERTDataset(Dataset):
         """
                     rand_doc_idx = random.randint(0, len(self.categories))
                     rand_doc = self.all_docs[rand_doc_idx]
-                    line,_ = rand_doc[random.randrange(len(rand_doc))]
+                    (line,_) = rand_doc[random.randrange(len(rand_doc))]
                     self.current_random_doc = rand_doc_idx
                 else:
                     rand_doc_idx = random.randint(0, len(self.all_docs)-1)
