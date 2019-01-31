@@ -199,7 +199,8 @@ class BERTDataset(Dataset):
                        torch.tensor(cur_features.segment_ids),
                        torch.tensor(cur_features.lm_label_ids),
                        torch.tensor(cur_features.is_next),
-                       torch.tensor(cur_features.true_input_length))
+                       #torch.tensor(cur_features.true_input_length)
+                      )
 
         return cur_tensors
 
@@ -374,13 +375,13 @@ class InputExample(object):
 class InputFeatures(object):
     """A single set of features of data."""
 
-    def __init__(self, input_ids, input_mask, segment_ids, is_next, lm_label_ids,true_input_length):
+    def __init__(self, input_ids, input_mask, segment_ids, is_next, lm_label_ids):#true_input_length):
         self.input_ids = input_ids
         self.input_mask = input_mask
         self.segment_ids = segment_ids
         self.is_next = is_next
         self.lm_label_ids = lm_label_ids
-        self.true_input_length=true_input_length
+        #self.true_input_length=true_input_length
 
 
 def random_word(tokens, tokenizer):
@@ -489,7 +490,7 @@ def convert_example_to_features(example, max_seq_length, tokenizer, no_truncate=
     # The mask has 1 for real tokens and 0 for padding tokens. Only real
     # tokens are attended to.
     input_mask = [1] * len(input_ids)
-    true_input_length=len(input_ids)
+    #true_input_length=len(input_ids)
 
     # Zero-pad up to the sequence length.
     while len(input_ids) < max_seq_length:
@@ -523,7 +524,8 @@ def convert_example_to_features(example, max_seq_length, tokenizer, no_truncate=
                              segment_ids=segment_ids,
                              lm_label_ids=lm_label_ids,
                              is_next=example.is_next,
-                            true_input_length=true_input_length)
+                            #true_input_length=true_input_length
+                            )
 
     return features
 
@@ -717,8 +719,8 @@ def main():
         logger.info("  Num steps = %d", num_train_steps)
 
         if args.local_rank == -1:
-            #train_sampler = RandomSampler(train_dataset)
-            train_sampler = SortishSampler(train_dataset,key=lambda x: train_dataset.__getitem__(x)[5].item(), bs=args.train_batch_size)
+            train_sampler = RandomSampler(train_dataset)
+            #train_sampler = SortishSampler(train_dataset,key=lambda x: train_dataset.__getitem__(x)[5].item(), bs=args.train_batch_size)
         else:
             #TODO: check if this works with current data generator from disk that relies on file.__next__
             # (it doesn't return item back by index)
