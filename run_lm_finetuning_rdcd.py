@@ -289,11 +289,12 @@ class BERTDataset(Dataset):
                     line = self.get_next_line()
             #check if our picked random line is really from another doc/category like we want it to be
             if self.current_random_doc != self.current_doc:
-                break
-            if self.current_rendom_doc==3008:
+                 if self.current_random_doc==3008:
                     self.unknown_cat=True
-                else:
+                 else:
                     self.unknown_cat=False
+                 break
+           
         return line
 
     def get_next_line(self):
