@@ -77,7 +77,7 @@ class BERTDataset(Dataset):
             self.all_docs = []
             doc = []
             self.corpus_lines = 0
-            self.categories=get_labels(self, data_dir=self.classes_path)
+            self.categories=get_labels(data_dir=self.classes_path)
             with open(corpus_path, "r", encoding=encoding) as f:
                 for line in tqdm(f, desc="Loading Dataset", total=corpus_lines):
                     line = line.strip()
@@ -134,7 +134,7 @@ class BERTDataset(Dataset):
             self.file = open(corpus_path, "r", encoding=encoding)
             self.random_file = open(corpus_path, "r", encoding=encoding)
 
-    def get_labels(self, data_dir):
+    def get_labels(data_dir):
         """See base class."""
         with open(data_dir, "r", encoding='utf-8') as f:
             lines = {}
