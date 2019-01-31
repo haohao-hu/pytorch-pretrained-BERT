@@ -21,6 +21,7 @@ from __future__ import print_function
 
 import os
 import logging
+from logger import Logger
 import argparse
 from tqdm import tqdm, trange
 
@@ -661,7 +662,7 @@ def main():
     #train_examples = None
     num_train_steps = None
     if args.do_train:
-        print('{"chart": "loss", "axis": "Iteration"}')
+        print( { "chart": "loss", "axis": "Iteration" } )
         print("Loading Train Dataset", args.train_file)
         train_dataset = BERTDataset(args.train_file, tokenizer, seq_len=args.max_seq_length,truncate_length=args.truncate_length,
                                     corpus_lines=None, on_memory=args.on_memory,no_truncate=args.no_truncate,with_category=args.with_category,classes_path=args.classes_file)
@@ -712,6 +713,7 @@ def main():
                              t_total=num_train_steps)
 
     global_step = 0
+    logger2 = Logger('./logs')
     if args.do_train:
         logger.info("***** Running training *****")
         logger.info("  Num examples = %d", len(train_dataset))
@@ -762,7 +764,13 @@ def main():
                     #info={'loss':loss.item()}
                     #datachartpoint='{"chart": "live training loss", ' + '"y": {:.6f}, "x": {}}}'.format(tr_loss/nb_tr_steps,global_step*args.train_batch_size)
                     #print(datachartpoint)
-                    print('{"chart": "loss", "x": ' +str(global_step*args.train_batch_size) + ', "y": {:.6f}}}'.format(loss))
+                    #print('{"chart": "loss", "x": ' +str(global_step*args.train_batch_size) + ', "y": {:.6f}}}'.format(loss))
+                    # 1. Log scalar values (scalar summary)
+                    info = { 'loss': loss.item() }
+
+                    for tag, value in info.items():
+                        logger2.scalar_summary(tag, value, step+1)
+                    print( {"chart": "loss", "x": str(global_step*args.train_batch_size) , "y": loss })
                     logger.info('{"chart": "loss", "x": ' +str(global_step*args.train_batch_size) + ', "y": {:.6f}}}'.format(tr_loss/nb_tr_steps))
                     f_log.write('{"chart": "loss", "number of iterations": ' +str(global_step*args.train_batch_size) + ', "average loss": {:.6f},"loss":{:.6f}}}\n'.format(tr_loss/nb_tr_steps,loss))
                 
