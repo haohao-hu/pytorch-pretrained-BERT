@@ -117,10 +117,10 @@ class BERTDataset(Dataset):
                             doc.append(line)
                             self.corpus_lines = self.corpus_lines + 1
 
+            if not with_category:
             # if last row in file is not empty
-            if self.all_docs[-1] != doc:
-                self.all_docs.append(doc)
-                if not with_category:
+                if self.all_docs[-1] != doc:
+                    self.all_docs.append(doc)
                     self.sample_to_doc.pop()
 
             self.num_docs = len(self.all_docs)
