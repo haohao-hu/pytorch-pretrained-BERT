@@ -159,14 +159,13 @@ class BERTDataset(Dataset):
                 self.file.close()
                 self.file = open(self.corpus_path, "r", encoding=self.encoding)
 
-        t1, t2, is_next_label = self.random_sent(item)
+        tokens_a, tokens_b, is_next_label = self.random_sent(item)
 
-        # tokenize
-        tokens_a = self.tokenizer.tokenize(t1)
-        tokens_b = self.tokenizer.tokenize(t2)
+        '''
         if len(tokens_b)==0:
             logger.info("Error in tokenization: ",t2)
         assert len(tokens_b)>0
+        '''
 
         # combine to one sample
         cur_example = InputExample(guid=cur_id, tokens_a=tokens_a, tokens_b=tokens_b, is_next=is_next_label)
@@ -187,23 +186,34 @@ class BERTDataset(Dataset):
         Get one sample from corpus consisting of two sentences. With prob. 50% these are two subsequent sentences
         from one doc. With 50% the second sentence will be a random one from another doc.
         :param index: int, index of sample.
-        :return: (str, str, int), sentence 1, sentence 2, isNextSentence Label
+        :return: (str, str, int), sentence 1, sentence 2, isNextSentence/sameCategoryIdPath Label
         """
         t1, t2 = self.get_corpus_line(index)
-        
+        # tokenize
+        tokens_a = self.tokenizer.tokenize(t1)
+        tokens_b = self.tokenizer.tokenize(t2)
+        while len(tokens_b)+len(tokens_a)>self.seq_len-3:
+            t1, t2 = self.get_corpus_line(index)
+            # tokenize
+            tokens_a = self.tokenizer.tokenize(t1)
+            tokens_b = self.tokenizer.tokenize(t2)
         if random.random() > 0.375:#0.5:#set lower value to account for unknown category (40% in training data), set 0.4444 if only 20% of training data's category is unknown
             label = 0
             if self.unknown_cat and random.random() > 0.000332446809:
                 label=1
         else:
             t2 = self.get_random_line()
+            tokens_b = self.tokenizer.tokenize(t2)
+            while len(tokens_b)+len(tokens_a)>self.seq_len-3:
+                t2 = self.get_random_line()
+                tokens_b = self.tokenizer.tokenize(t2)
             label = 1
             if self.unknown_cat and random.random() <= 0.000332446809:
                 label=0
 
-        assert len(t1) > 0
-        assert len(t2) > 0
-        return t1, t2, label
+        assert len(tokens_a) > 0
+        assert len(tokens_b) > 0
+        return tokens_a, tokens_b, label
     
 
     def get_corpus_line(self, item):
