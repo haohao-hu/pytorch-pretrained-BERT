@@ -146,7 +146,7 @@ class BERTDataset(Dataset):
     def __len__(self):
         # last line of doc won't be used, because there's no "nextSentence". Additionally, we start counting at 0.
         if self.with_category:
-            return self.corpus_lines -1
+            return self.corpus_lines
         else:
             return self.corpus_lines - self.num_docs - 1
 
