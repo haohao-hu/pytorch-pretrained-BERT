@@ -48,14 +48,14 @@ def warmup_linear(x, warmup=0.002):
     return 1.0 - x
 
 def get_labels(data_dir):
-        """See base class."""
+    """See base class."""
     with open(data_dir, "r", encoding='utf-8') as f:
         lines = {}
         for i,line in enumerate(f):
             lines[str(line).strip('\n')]=i
         lines["<unknown>"]=3008
         assert len(lines)==3009
-        return lines
+    return lines
 #dataset_path
 class BERTDataset(Dataset):
     def __init__(self, corpus_path, tokenizer, seq_len, classes_path, encoding="utf-8", corpus_lines=None, on_memory=True, no_truncate=False, with_category=False):
