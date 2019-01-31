@@ -23,7 +23,9 @@ python run_lm_finetuning_rdcd.py \
   --classes_file /storage/pytorch-pretrained-BERT/rdc_dataset/classes.txt \
   --on_memory \
   --truncate_length 20 \
-  --with_category  > /artifacts/e5-lr3.5e-5-bs32-msl256-bert-lm-lg-train600k.log
+  --with_category  
+  
+tensorboard --logdir='./logs' --port=8888:8888  > /artifacts/e5-lr3.5e-5-bs32-msl256-bert-lm-lg-train600k.log
   #--max_seq_length 164 #> /artifacts/e5-lr3e-5-bs64-bert-lm.log
   #--no_truncate \ --no_truncate \
   #--fp16 \   
