@@ -6,3 +6,9 @@ tqdm
 boto3
 # Used for downloading models over HTTP
 requests
+#for tensorboard access
+tensorflow
+torch
+torchvision
+scipy
+numpy
