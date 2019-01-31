@@ -34,6 +34,7 @@ from pytorch_pretrained_bert.modeling import BertForPreTraining
 from pytorch_pretrained_bert.optimization import BertAdam
 
 from torch.utils.data import Dataset
+import torch.utils.data
 import random
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -41,6 +42,25 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+class SortishSampler(torch.utils.data.sampler.Sampler):
+    def __init__(self, data_source, key, bs):
+        self.data_source, self.key, self.bs = data_source, key, bs
+
+    def __len__(self):
+        return len(self.data_source)
+
+    def __iter__(self):
+        idxs = np.random.permutation(len(self.data_source))
+        sz = self.bs*50
+        ck_idx = [idxs[i:i+sz] for i in range(0, len(idxs), sz)]
+        sort_idx = np.concatenate([sorted(s, key=self.key, reverse=True) for s in ck_idx])
+        sz = self.bs
+        ck_idx = [sort_idx[i:i+sz] for i in range(0, len(sort_idx), sz)]
+        max_ck = np.argmax([self.key(ck[0]) for ck in ck_idx])
+        ck_idx[0], ck_idx[max_ck] = ck_idx[max_ck], ck_idx[0]
+        sort_idx = np.concatenate(np.random.permutation(ck_idx[1:]))
+        sort_idx = np.concatenate((ck_idx[0], sort_idx))
+        return iter(sort_idx)
 
 def warmup_linear(x, warmup=0.002):
     if x < warmup:
@@ -178,7 +198,8 @@ class BERTDataset(Dataset):
                        torch.tensor(cur_features.input_mask),
                        torch.tensor(cur_features.segment_ids),
                        torch.tensor(cur_features.lm_label_ids),
-                       torch.tensor(cur_features.is_next))
+                       torch.tensor(cur_features.is_next),
+                       torch.tensor(cur_features.true_input_length))
 
         return cur_tensors
 
@@ -353,12 +374,13 @@ class InputExample(object):
 class InputFeatures(object):
     """A single set of features of data."""
 
-    def __init__(self, input_ids, input_mask, segment_ids, is_next, lm_label_ids):
+    def __init__(self, input_ids, input_mask, segment_ids, is_next, lm_label_ids,true_input_length):
         self.input_ids = input_ids
         self.input_mask = input_mask
         self.segment_ids = segment_ids
         self.is_next = is_next
         self.lm_label_ids = lm_label_ids
+        self.true_input_length=true_input_length
 
 
 def random_word(tokens, tokenizer):
@@ -467,6 +489,7 @@ def convert_example_to_features(example, max_seq_length, tokenizer, no_truncate=
     # The mask has 1 for real tokens and 0 for padding tokens. Only real
     # tokens are attended to.
     input_mask = [1] * len(input_ids)
+    true_input_length=len(input_ids)
 
     # Zero-pad up to the sequence length.
     while len(input_ids) < max_seq_length:
@@ -499,7 +522,8 @@ def convert_example_to_features(example, max_seq_length, tokenizer, no_truncate=
                              input_mask=input_mask,
                              segment_ids=segment_ids,
                              lm_label_ids=lm_label_ids,
-                             is_next=example.is_next)
+                             is_next=example.is_next,
+                            true_input_length=true_input_length)
 
     return features
 
@@ -693,7 +717,8 @@ def main():
         logger.info("  Num steps = %d", num_train_steps)
 
         if args.local_rank == -1:
-            train_sampler = RandomSampler(train_dataset)
+            #train_sampler = RandomSampler(train_dataset)
+            train_sampler = SortishSampler(train_dataset,key=lambda x: train_dataset.__getitem__(x)[5].item(), bs=args.train_batch_size)
         else:
             #TODO: check if this works with current data generator from disk that relies on file.__next__
             # (it doesn't return item back by index)
