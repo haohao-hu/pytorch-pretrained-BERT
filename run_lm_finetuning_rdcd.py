@@ -58,7 +58,7 @@ def get_labels(data_dir):
     return lines
 #dataset_path
 class BERTDataset(Dataset):
-    def __init__(self, corpus_path, tokenizer, seq_len, classes_path, encoding="utf-8", corpus_lines=None, on_memory=True, no_truncate=False, with_category=False):
+    def __init__(self, corpus_path, tokenizer, seq_len, classes_path, truncate_length,encoding="utf-8", corpus_lines=None, on_memory=True, no_truncate=False, with_category=False):
         self.vocab = tokenizer.vocab
         self.tokenizer = tokenizer
         self.seq_len = seq_len
@@ -71,6 +71,7 @@ class BERTDataset(Dataset):
         self.with_category=with_category
         self.classes_path=classes_path
         self.unknown_cat=False
+        self.truncate_length=truncate_length
 
         # for loading samples directly from file
         self.sample_counter = 0  # used to keep track of full epochs on file
@@ -192,7 +193,7 @@ class BERTDataset(Dataset):
         # tokenize
         tokens_a = self.tokenizer.tokenize(t1)
         tokens_b = self.tokenizer.tokenize(t2)
-        while len(tokens_b)+len(tokens_a)>self.seq_len-3:
+        while len(tokens_b)+len(tokens_a)>self.seq_len-3+self.truncate_length:
             t1, t2 = self.get_corpus_line(index)
             # tokenize
             tokens_a = self.tokenizer.tokenize(t1)
@@ -204,7 +205,7 @@ class BERTDataset(Dataset):
         else:
             t2 = self.get_random_line()
             tokens_b = self.tokenizer.tokenize(t2)
-            while len(tokens_b)+len(tokens_a)>self.seq_len-3:
+            while len(tokens_b)+len(tokens_a)>self.seq_len-3+self.truncate_length:
                 t2 = self.get_random_line()
                 tokens_b = self.tokenizer.tokenize(t2)
             label = 1
@@ -565,6 +566,10 @@ def main():
                         type=int,
                         default=42,
                         help="random seed for initialization")
+    parser.add_argument('--truncate_length',
+                        type=int,
+                        default=10,
+                        help="max number of tokens allow to truncate")    
     parser.add_argument('--gradient_accumulation_steps',
                         type=int,
                         default=1,
@@ -624,7 +629,7 @@ def main():
     if args.do_train:
         print('{"chart": "loss", "axis": "Iteration"}')
         print("Loading Train Dataset", args.train_file)
-        train_dataset = BERTDataset(args.train_file, tokenizer, seq_len=args.max_seq_length,
+        train_dataset = BERTDataset(args.train_file, tokenizer, seq_len=args.max_seq_length,truncate_length=args.truncate_length,
                                     corpus_lines=None, on_memory=args.on_memory,no_truncate=args.no_truncate,with_category=args.with_category,classes_path=args.classes_file)
         num_train_steps = int(
             len(train_dataset) / args.train_batch_size / args.gradient_accumulation_steps * args.num_train_epochs)
