@@ -713,7 +713,7 @@ def main():
                              t_total=num_train_steps)
 
     global_step = 0
-    logger2 = Logger('./logs')
+    logger2 = Logger('/storage/pytorch-pretrained-BERT/logs')
     if args.do_train:
         logger.info("***** Running training *****")
         logger.info("  Num examples = %d", len(train_dataset))
