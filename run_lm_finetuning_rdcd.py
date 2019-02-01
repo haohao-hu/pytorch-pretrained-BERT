@@ -552,6 +552,11 @@ def main():
                         type=str,
                         required=True,
                         help="The output directory where the model checkpoints will be written.")
+    parser.add_argument("--log_dir",
+                        default=None,
+                        type=str,
+                        required=True,
+                        help="The log directory where the model training log will be written.")
 
     ## Other parameters
     parser.add_argument("--max_seq_length",
@@ -713,7 +718,8 @@ def main():
                              t_total=num_train_steps)
 
     global_step = 0
-    logger2 = Logger('/storage/pytorch-pretrained-BERT/logs')
+    #logger2 = Logger('/storage/pytorch-pretrained-BERT/logs')
+    logger2 = Logger(args.log_dir)
     if args.do_train:
         logger.info("***** Running training *****")
         logger.info("  Num examples = %d", len(train_dataset))
