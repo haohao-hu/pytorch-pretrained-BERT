@@ -17,13 +17,14 @@ python run_lm_finetuning_rdcd.py \
   --do_lower_case \
   --train_file /storage/pytorch-pretrained-BERT/rdc_dataset/train.tsv \
   --output_dir /storage/pytorch-pretrained-BERT/models/rdcd_fine_tune_lm_testing_train600k_find_lr_1 \
-  --num_train_epochs 0.1 \
+  --num_train_epochs 1 \
   --learning_rate 1e-4 \
   --train_batch_size 32 \
   --max_seq_length 256 \
+  --log_dir /storage/pytorch-pretrained-BERT/logs/lr_find \
   --classes_file /storage/pytorch-pretrained-BERT/rdc_dataset/classes.txt \
   --on_memory \
-  --warmup_proportion 1 \
+  --warmup_proportion 0.9999 \
   --truncate_length 20 \
   --with_category  
   
