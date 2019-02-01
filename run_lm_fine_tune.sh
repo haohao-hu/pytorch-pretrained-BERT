@@ -9,7 +9,7 @@ pip install tensorflow torch torchvision scipy numpy
 #pip install pytorch-pretrained-bert
 #git clone https://github.com/NVIDIA/apex.git && cd apex && python setup.py install --cuda_ext --cpp_ext
 #cd ..
-tensorboard --logdir='/storage/pytorch-pretrained-BERT/logs' --port=8888
+#tensorboard --logdir='/storage/pytorch-pretrained-BERT/logs' --port=8888
 #python /storage/pytorch-pretrained-BERT/run_lm_finetuning_rdcd.py \
 python run_lm_finetuning_rdcd.py \
   --bert_model bert-large-uncased \
