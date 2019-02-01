@@ -766,7 +766,7 @@ def main():
                     #print(datachartpoint)
                     #print('{"chart": "loss", "x": ' +str(global_step*args.train_batch_size) + ', "y": {:.6f}}}'.format(loss))
                     # 1. Log scalar values (scalar summary)
-                    info = { 'loss': loss.item() }
+                    info = { 'loss': loss.item(), 'learning rate': lr_this_step }
 
                     for tag, value in info.items():
                         logger2.scalar_summary(tag, value, step+1)
